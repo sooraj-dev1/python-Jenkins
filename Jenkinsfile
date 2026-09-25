@@ -10,10 +10,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+                    pip install --break-system-packages -r requirements.txt
                 '''
             }
         }
@@ -21,8 +18,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    . venv/bin/activate
-                    pytest test_app.py -v --junitxml=results.xml
+                    python3 -m pytest test_app.py -v --junitxml=results.xml
                 '''
             }
         }
@@ -31,7 +27,6 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: 'results.xml'
-            sh 'rm -rf venv'
         }
     }
 }
