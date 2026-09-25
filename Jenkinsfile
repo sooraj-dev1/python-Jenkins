@@ -1,19 +1,18 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scms
-            }
-        }
+    environment {
+        PYTHONDONTWRITEBYTECODE = '1'
+        PYTHONUNBUFFERED        = '1'
+    }
 
+    stages {
         stage('Install Dependencies') {
             steps {
-                bat '''
-                    python -m venv venv
-                    call venv\\Scripts\\activate.bat
-                    python -m pip install --upgrade pip
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
@@ -21,8 +20,8 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                bat '''
-                    call venv\\Scripts\\activate.bat
+                sh '''
+                    . venv/bin/activate
                     pytest test_app.py -v --junitxml=results.xml
                 '''
             }
@@ -32,7 +31,7 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: 'results.xml'
-            bat 'rmdir /s /q venv'
+            sh 'rm -rf venv'
         }
     }
 }
